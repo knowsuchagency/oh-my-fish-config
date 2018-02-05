@@ -1,11 +1,16 @@
 ## pyenv compatibility
-status --is-interactive; and . (pyenv init -|psub)
+#status --is-interactive; and source (pyenv init -|psub)
 
 ## bobthefish configuration
-set -g theme_nerd_fonts yes
+setenv theme_nerd_fonts yes
 
-## start ssh-agent
-start_ssh_agent
+# lang see https://bugs.python.org/issue18378
+set -gx LANG en_US.UTF-8
+set -gx LC_ALL en_US.UTF-8
+
+# localdocker for kalo lws stuff
+setenv LOCALDOCKER 127.0.0.1
+
 
 ## abbreviations
 
@@ -15,6 +20,13 @@ abbr -a pm python manage.py
 abbr -a j jupyter
 abbr -a jn jupyter notebook
 abbr -a jnc jupyter nbconvert
+abbr -a pti ptipython
+abbr -a pca "gh:knowsuchagency/pyramid-cookiecutter-alchemy"
+
+# pipenv
+
+setenv WORKON_HOME '~/.venvs'
+
 
 # git 
 abbr -a gs git status
@@ -23,6 +35,9 @@ abbr -a gc git commit
 abbr -a gcm git commit -m
 abbr -a gp git push
 
+
+# cookiecutter
+set -g cookiecutter_url 'https://github.com/knowsuchagency/cookiecutter-pypackage.git'
 
 ## functions
 
@@ -38,6 +53,13 @@ function pip-upgrade-all
 end
 
 
+# cookiecutter
+
+function new-package
+    cookiecutter $cookiecutter_url
+end
+
+
 # docker
 
 function docker-remove-dangling
@@ -47,13 +69,10 @@ function docker-remove-dangling
     docker rmi (docker images -f "dangling=true" -q)
 end
 
+# mono
+setenv MONO_GAC_PREFIX /usr/local
 
-# cheat sheets
-
-function ch
-    if [ (count $argv) -gt 0 ]
-        cheat $argv | less
-    else
-        cheat
-    end
+# zappa
+function zappashell
+    docker run -ti -e AWS_PROFILE=default -v (pwd):/var/task -v ~/.aws/:/root/.aws  --rm lambci/lambda:build-python3.6 bash
 end
